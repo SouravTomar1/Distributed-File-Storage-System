@@ -1,0 +1,9 @@
+@"
+build/
+storage_data/
+.vscode/
+*.exe
+*.obj
+*.o
+*.log
+"@ | Set-Content .gitignore

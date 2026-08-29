@@ -1,5 +1,0 @@
-C:/Users/iisga/OneDrive/Desktop/DFSS/build/CMakeFiles/StorageNode.dir
-C:/Users/iisga/OneDrive/Desktop/DFSS/build/CMakeFiles/Client.dir
-C:/Users/iisga/OneDrive/Desktop/DFSS/build/CMakeFiles/Master.dir
-C:/Users/iisga/OneDrive/Desktop/DFSS/build/CMakeFiles/edit_cache.dir
-C:/Users/iisga/OneDrive/Desktop/DFSS/build/CMakeFiles/rebuild_cache.dir
