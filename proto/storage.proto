@@ -1,0 +1,166 @@
+syntax = "proto3";
+
+package storage;
+
+
+// ============================================================
+// Upload
+// ============================================================
+
+message UploadRequest {
+
+    string file_id = 1;
+
+    string filename = 2;
+
+    int32 chunk_id = 3;
+
+    int32 total_chunks = 4;
+
+    bytes data = 5;
+}
+
+
+message UploadResponse {
+
+    bool success = 1;
+
+    string message = 2;
+}
+
+
+// ============================================================
+// Download
+// ============================================================
+
+message DownloadRequest {
+
+    string file_id = 1;
+
+    string filename = 2;
+}
+
+
+message DownloadResponse {
+
+    bool success = 1;
+
+    string message = 2;
+
+    bytes data = 3;
+}
+
+
+// ============================================================
+// Master → Storage Node Registration
+// ============================================================
+
+message RegisterNodeRequest {
+
+    string node_id = 1;
+
+    string address = 2;
+
+    int32 port = 3;
+}
+
+
+message RegisterNodeResponse {
+
+    bool success = 1;
+
+    string message = 2;
+}
+
+
+// ============================================================
+// Master → Storage Node Health Check
+// ============================================================
+
+message NodeHealthRequest {
+
+    string node_id = 1;
+}
+
+
+message NodeHealthResponse {
+
+    bool healthy = 1;
+
+    string message = 2;
+}
+
+
+// ============================================================
+// Master → Get Available Nodes
+// ============================================================
+
+message GetNodesRequest {
+}
+
+
+message StorageNodeInfo {
+
+    string node_id = 1;
+
+    string address = 2;
+
+    int32 port = 3;
+
+    bool healthy = 4;
+}
+
+
+message GetNodesResponse {
+
+    repeated StorageNodeInfo nodes = 1;
+}
+
+
+// ============================================================
+// Storage Service
+// ============================================================
+
+service StorageService {
+
+    rpc UploadFile(
+        UploadRequest
+    ) returns (
+        UploadResponse
+    );
+
+
+    rpc DownloadFile(
+        DownloadRequest
+    ) returns (
+        DownloadResponse
+    );
+}
+
+
+// ============================================================
+// Master Service
+// ============================================================
+
+service MasterService {
+
+    rpc RegisterNode(
+        RegisterNodeRequest
+    ) returns (
+        RegisterNodeResponse
+    );
+
+
+    rpc CheckNodeHealth(
+        NodeHealthRequest
+    ) returns (
+        NodeHealthResponse
+    );
+
+
+    rpc GetNodes(
+        GetNodesRequest
+    ) returns (
+        GetNodesResponse
+    );
+}
