@@ -1,0 +1,8 @@
+Change Dir: 'C:/Users/iisga/OneDrive/Desktop/DFSS/build'
+
+Run Build Command(s): C:/msys64/ucrt64/bin/ninja.exe -v -j 1
+[1/12] C:\msys64\ucrt64\bin\c++.exe -DPROTOBUF_USE_DLLS -IC:/Users/iisga/OneDrive/Desktop/DFSS/proto -std=gnu++17 -MD -MT CMakeFiles/StorageNode.dir/storage/StorageNode.cpp.obj -MF CMakeFiles\StorageNode.dir\storage\StorageNode.cpp.obj.d -o CMakeFiles/StorageNode.dir/storage/StorageNode.cpp.obj -c C:/Users/iisga/OneDrive/Desktop/DFSS/storage/StorageNode.cpp
+FAILED: [code=1] CMakeFiles/StorageNode.dir/storage/StorageNode.cpp.obj 
+C:\msys64\ucrt64\bin\c++.exe -DPROTOBUF_USE_DLLS -IC:/Users/iisga/OneDrive/Desktop/DFSS/proto -std=gnu++17 -MD -MT CMakeFiles/StorageNode.dir/storage/StorageNode.cpp.obj -MF CMakeFiles\StorageNode.dir\storage\StorageNode.cpp.obj.d -o CMakeFiles/StorageNode.dir/storage/StorageNode.cpp.obj -c C:/Users/iisga/OneDrive/Desktop/DFSS/storage/StorageNode.cpp
+ninja: build stopped: subcommand failed.
+

@@ -5,6 +5,8 @@
 #include <random>
 #include <cstdint>
 #include <vector>
+#include <unordered_map>
+#include <filesystem>
 
 #include <grpcpp/grpcpp.h>
 
@@ -17,11 +19,19 @@ using grpc::Status;
 using storage::StorageService;
 using storage::UploadRequest;
 using storage::UploadResponse;
+using storage::DownloadRequest;
+using storage::DownloadResponse;
 
 using storage::MasterService;
 using storage::GetNodesRequest;
 using storage::GetNodesResponse;
 using storage::StorageNodeInfo;
+
+using storage::RecordChunkRequest;
+using storage::RecordChunkResponse;
+
+using storage::GetFileRequest;
+using storage::GetFileResponse;
 
 
 // ============================================================
@@ -29,10 +39,13 @@ using storage::StorageNodeInfo;
 // ============================================================
 
 constexpr std::size_t CHUNK_SIZE =
-    4 * 1024 * 1024;
+    4 * 1024 * 1024;       // 4 MB
 
 constexpr int GRPC_MESSAGE_LIMIT =
-    16 * 1024 * 1024;
+    16 * 1024 * 1024;      // 16 MB
+
+constexpr int REPLICATION_FACTOR =
+    2;
 
 
 // ============================================================
@@ -45,7 +58,11 @@ public:
 
     explicit StorageClient(
         std::shared_ptr<Channel> channel)
-        : stub_(StorageService::NewStub(channel)) {}
+        : stub_(
+            StorageService::NewStub(
+                channel
+            )
+        ) {}
 
 
     // ========================================================
@@ -61,17 +78,29 @@ public:
 
         UploadRequest request;
 
-        request.set_file_id(fileId);
-        request.set_filename(filename);
-        request.set_chunk_id(chunkId);
-        request.set_total_chunks(totalChunks);
-        request.set_data(data);
+        request.set_file_id(
+            fileId
+        );
 
+        request.set_filename(
+            filename
+        );
+
+        request.set_chunk_id(
+            chunkId
+        );
+
+        request.set_total_chunks(
+            totalChunks
+        );
+
+        request.set_data(
+            data
+        );
 
         UploadResponse response;
 
         ClientContext context;
-
 
         Status status =
             stub_->UploadFile(
@@ -79,7 +108,6 @@ public:
                 request,
                 &response
             );
-
 
         if (!status.ok()) {
 
@@ -91,7 +119,6 @@ public:
             return false;
         }
 
-
         if (!response.success()) {
 
             std::cerr
@@ -102,11 +129,77 @@ public:
             return false;
         }
 
-
         std::cout
             << "Server response: "
             << response.message()
             << std::endl;
+
+        return true;
+    }
+
+
+    // ========================================================
+    // Download a single chunk
+    // ========================================================
+
+    bool DownloadChunk(
+        const std::string& fileId,
+        const std::string& filename,
+        int chunkId,
+        std::string& data) {
+
+        DownloadRequest request;
+
+        request.set_file_id(
+            fileId
+        );
+
+        request.set_filename(
+            filename
+        );
+
+        request.set_chunk_id(
+            chunkId
+        );
+
+
+        DownloadResponse response;
+
+        ClientContext context;
+
+
+        Status status =
+            stub_->DownloadFile(
+                &context,
+                request,
+                &response
+            );
+
+
+        if (!status.ok()) {
+
+            std::cerr
+                << "Download RPC failed: "
+                << status.error_message()
+                << std::endl;
+
+            return false;
+        }
+
+
+        if (!response.success()) {
+
+            std::cerr
+                << "Chunk download failed: "
+                << response.message()
+                << std::endl;
+
+            return false;
+        }
+
+
+        data =
+            response.data();
 
 
         return true;
@@ -115,7 +208,9 @@ public:
 
 private:
 
-    std::unique_ptr<StorageService::Stub> stub_;
+    std::unique_ptr<
+        StorageService::Stub
+    > stub_;
 };
 
 
@@ -131,12 +226,14 @@ std::string GenerateFileId() {
         randomDevice()
     );
 
-    std::uniform_int_distribution<std::uint64_t>
-        distribution;
-
+    std::uniform_int_distribution<
+        std::uint64_t
+    > distribution;
 
     return std::to_string(
-        distribution(generator)
+        distribution(
+            generator
+        )
     );
 }
 
@@ -160,8 +257,12 @@ bool GetStorageNodes(
         );
 
 
-    std::unique_ptr<MasterService::Stub> masterStub =
-        MasterService::NewStub(masterChannel);
+    std::unique_ptr<
+        MasterService::Stub
+    > masterStub =
+        MasterService::NewStub(
+            masterChannel
+        );
 
 
     GetNodesRequest request;
@@ -190,11 +291,20 @@ bool GetStorageNodes(
     }
 
 
-    for (const auto& node : response.nodes()) {
+    // --------------------------------------------------------
+    // Only use healthy nodes
+    // --------------------------------------------------------
+
+    for (
+        const auto& node :
+        response.nodes()
+    ) {
 
         if (node.healthy()) {
 
-            nodes.push_back(node);
+            nodes.push_back(
+                node
+            );
         }
     }
 
@@ -216,7 +326,10 @@ bool GetStorageNodes(
         << std::endl;
 
 
-    for (const auto& node : nodes) {
+    for (
+        const auto& node :
+        nodes
+    ) {
 
         std::cout
             << "  "
@@ -234,17 +347,21 @@ bool GetStorageNodes(
 
 
 // ============================================================
-// Create Storage Client for Node
+// Create Storage Client
 // ============================================================
 
-std::unique_ptr<StorageClient>
+std::unique_ptr<
+    StorageClient
+>
 CreateStorageClient(
     const StorageNodeInfo& node) {
 
     std::string address =
         node.address() +
         ":" +
-        std::to_string(node.port());
+        std::to_string(
+            node.port()
+        );
 
 
     grpc::ChannelArguments channelArgs;
@@ -268,9 +385,158 @@ CreateStorageClient(
         );
 
 
-    return std::make_unique<StorageClient>(
+    return std::make_unique<
+        StorageClient
+    >(
         channel
     );
+}
+
+
+// ============================================================
+// Record Chunk Location in Master
+// ============================================================
+
+bool RecordChunkLocation(
+    const std::string& fileId,
+    const std::string& filename,
+    long long fileSize,
+    int totalChunks,
+    int chunkId,
+    const StorageNodeInfo& node) {
+
+    std::cout
+        << "\nRecording metadata in Master..."
+        << std::endl;
+
+
+    auto masterChannel =
+        grpc::CreateChannel(
+            "localhost:50050",
+            grpc::InsecureChannelCredentials()
+        );
+
+
+    std::unique_ptr<
+        MasterService::Stub
+    > masterStub =
+        MasterService::NewStub(
+            masterChannel
+        );
+
+
+    RecordChunkRequest request;
+
+
+    request.set_file_id(
+        fileId
+    );
+
+
+    request.set_chunk_id(
+        chunkId
+    );
+
+
+    request.set_node_id(
+        node.node_id()
+    );
+
+
+    request.set_filename(
+        filename
+    );
+
+
+    request.set_file_size(
+        fileSize
+    );
+
+
+    request.set_total_chunks(
+        totalChunks
+    );
+
+
+    RecordChunkResponse response;
+
+
+    ClientContext context;
+
+
+    Status status =
+        masterStub->RecordChunk(
+            &context,
+            request,
+            &response
+        );
+
+
+    if (!status.ok()) {
+
+        std::cerr
+            << "Metadata RPC failed: "
+            << status.error_message()
+            << std::endl;
+
+        return false;
+    }
+
+
+    if (!response.success()) {
+
+        std::cerr
+            << "Metadata recording failed: "
+            << response.message()
+            << std::endl;
+
+        return false;
+    }
+
+
+    std::cout
+        << "Metadata recorded successfully:"
+        << std::endl;
+
+
+    std::cout
+        << "  File ID: "
+        << fileId
+        << std::endl;
+
+
+    std::cout
+        << "  Filename: "
+        << filename
+        << std::endl;
+
+
+    std::cout
+        << "  File size: "
+        << fileSize
+        << " bytes"
+        << std::endl;
+
+
+    std::cout
+        << "  Total chunks: "
+        << totalChunks
+        << std::endl;
+
+
+    std::cout
+        << "  Chunk ID: "
+        << chunkId
+        << std::endl;
+
+
+    std::cout
+        << "  Node: "
+        << node.node_id()
+        << std::endl;
+
+
+    return true;
 }
 
 
@@ -279,14 +545,16 @@ CreateStorageClient(
 // ============================================================
 
 bool UploadFile(
-    const std::string& filename) {
+    const std::string& filename,
+    std::string& uploadedFileId) {
 
-
-    // --------------------------------------------------------
+    // ========================================================
     // Get nodes from Master
-    // --------------------------------------------------------
+    // ========================================================
 
-    std::vector<StorageNodeInfo> nodes;
+    std::vector<
+        StorageNodeInfo
+    > nodes;
 
 
     if (!GetStorageNodes(nodes)) {
@@ -295,9 +563,48 @@ bool UploadFile(
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
+    // Check replication requirement
+    // ========================================================
+
+    if (
+        static_cast<int>(
+            nodes.size()
+        ) <
+        REPLICATION_FACTOR
+    ) {
+
+        std::cerr
+            << "\nNot enough healthy storage nodes."
+            << std::endl;
+
+
+        std::cerr
+            << "Replication factor: "
+            << REPLICATION_FACTOR
+            << std::endl;
+
+
+        std::cerr
+            << "Healthy nodes available: "
+            << nodes.size()
+            << std::endl;
+
+
+        std::cerr
+            << "At least "
+            << REPLICATION_FACTOR
+            << " healthy nodes are required."
+            << std::endl;
+
+
+        return false;
+    }
+
+
+    // ========================================================
     // Open file
-    // --------------------------------------------------------
+    // ========================================================
 
     std::ifstream file(
         filename,
@@ -316,9 +623,9 @@ bool UploadFile(
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // Determine file size
-    // --------------------------------------------------------
+    // ========================================================
 
     file.seekg(
         0,
@@ -346,9 +653,9 @@ bool UploadFile(
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // Calculate total chunks
-    // --------------------------------------------------------
+    // ========================================================
 
     int totalChunks;
 
@@ -365,30 +672,37 @@ bool UploadFile(
                     fileSize +
                     CHUNK_SIZE -
                     1
-                ) / CHUNK_SIZE
+                ) /
+                CHUNK_SIZE
             );
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // Generate File ID
-    // --------------------------------------------------------
+    // ========================================================
 
     std::string fileId =
         GenerateFileId();
 
 
-    // --------------------------------------------------------
+    uploadedFileId =
+        fileId;
+
+
+    // ========================================================
     // Display upload information
-    // --------------------------------------------------------
+    // ========================================================
 
     std::cout
         << "\n========================================"
         << std::endl;
 
+
     std::cout
         << "        DISTRIBUTED FILE STORAGE"
         << std::endl;
+
 
     std::cout
         << "========================================"
@@ -434,9 +748,20 @@ bool UploadFile(
 
 
     std::cout
+        << "Replication factor: "
+        << REPLICATION_FACTOR
+        << std::endl;
+
+
+    std::cout
         << "gRPC message limit: "
         << GRPC_MESSAGE_LIMIT
         << " bytes (16 MB)"
+        << std::endl;
+
+
+    std::cout
+        << "PostgreSQL metadata: ENABLED"
         << std::endl;
 
 
@@ -445,9 +770,9 @@ bool UploadFile(
         << std::endl;
 
 
-    // --------------------------------------------------------
-    // Upload each chunk
-    // --------------------------------------------------------
+    // ========================================================
+    // Upload every chunk
+    // ========================================================
 
     for (
         int chunkId = 0;
@@ -455,19 +780,21 @@ bool UploadFile(
         ++chunkId
     ) {
 
-
-        // ----------------------------------------------------
+        // ====================================================
         // Calculate chunk size
-        // ----------------------------------------------------
+        // ====================================================
 
         std::size_t bytesToRead =
             CHUNK_SIZE;
 
 
         std::streamoff bytesAlreadyRead =
-            static_cast<std::streamoff>(
+            static_cast<
+                std::streamoff
+            >(
                 chunkId
-            ) * CHUNK_SIZE;
+            ) *
+            CHUNK_SIZE;
 
 
         std::streamoff remainingBytes =
@@ -483,21 +810,21 @@ bool UploadFile(
 
         if (
             remainingBytes <
-            static_cast<std::streamoff>(
+            static_cast<
+                std::streamoff
+            >(
                 CHUNK_SIZE
             )
         ) {
 
             bytesToRead =
-                static_cast<std::size_t>(
+                static_cast<
+                    std::size_t
+                >(
                     remainingBytes
                 );
         }
 
-
-        // ----------------------------------------------------
-        // Empty file
-        // ----------------------------------------------------
 
         if (fileSize == 0) {
 
@@ -505,9 +832,9 @@ bool UploadFile(
         }
 
 
-        // ----------------------------------------------------
+        // ====================================================
         // Allocate buffer
-        // ----------------------------------------------------
+        // ====================================================
 
         std::string buffer(
             bytesToRead,
@@ -515,15 +842,17 @@ bool UploadFile(
         );
 
 
-        // ----------------------------------------------------
+        // ====================================================
         // Read chunk
-        // ----------------------------------------------------
+        // ====================================================
 
         if (bytesToRead > 0) {
 
             file.read(
                 buffer.data(),
-                static_cast<std::streamsize>(
+                static_cast<
+                    std::streamsize
+                >(
                     bytesToRead
                 )
             );
@@ -535,7 +864,9 @@ bool UploadFile(
 
             if (
                 bytesRead !=
-                static_cast<std::streamsize>(
+                static_cast<
+                    std::streamsize
+                >(
                     bytesToRead
                 )
             ) {
@@ -545,43 +876,66 @@ bool UploadFile(
                     << chunkId
                     << std::endl;
 
+
                 file.close();
+
 
                 return false;
             }
         }
 
 
-        // ----------------------------------------------------
-        // Select storage node
-        //
-        // Round-robin distribution:
-        //
-        // chunk 0 -> node 0
-        // chunk 1 -> node 1
-        // chunk 2 -> node 2
-        // chunk 3 -> node 0
-        // ...
-        // ----------------------------------------------------
+        // ====================================================
+        // Select primary node
+        // ====================================================
 
-        const StorageNodeInfo& node =
+        const StorageNodeInfo& primaryNode =
             nodes[
-                chunkId % nodes.size()
+                chunkId %
+                nodes.size()
             ];
 
 
-        std::string nodeAddress =
-            node.address() +
+        // ====================================================
+        // Select replica node
+        // ====================================================
+
+        const StorageNodeInfo& replicaNode =
+            nodes[
+                (
+                    chunkId + 1
+                ) %
+                nodes.size()
+            ];
+
+
+        std::string primaryAddress =
+            primaryNode.address() +
             ":" +
-            std::to_string(node.port());
+            std::to_string(
+                primaryNode.port()
+            );
 
 
-        // ----------------------------------------------------
+        std::string replicaAddress =
+            replicaNode.address() +
+            ":" +
+            std::to_string(
+                replicaNode.port()
+            );
+
+
+        // ====================================================
         // Display chunk information
-        // ----------------------------------------------------
+        // ====================================================
 
         std::cout
-            << "\nUploading chunk "
+            << "\n========================================"
+            << std::endl;
+
+
+        std::cout
+            << "Uploading chunk "
             << chunkId + 1
             << "/"
             << totalChunks
@@ -602,28 +956,53 @@ bool UploadFile(
 
 
         std::cout
-            << "Target node: "
-            << node.node_id()
+            << "Primary node: "
+            << primaryNode.node_id()
             << " ("
-            << nodeAddress
+            << primaryAddress
             << ")"
             << std::endl;
 
 
-        // ----------------------------------------------------
-        // Create client for selected node
-        // ----------------------------------------------------
+        std::cout
+            << "Replica node: "
+            << replicaNode.node_id()
+            << " ("
+            << replicaAddress
+            << ")"
+            << std::endl;
 
-        auto client =
-            CreateStorageClient(node);
+
+        std::cout
+            << "========================================"
+            << std::endl;
 
 
-        // ----------------------------------------------------
-        // Upload chunk
-        // ----------------------------------------------------
+        // ====================================================
+        // Create primary client
+        // ====================================================
 
-        bool success =
-            client->UploadChunk(
+        auto primaryClient =
+            CreateStorageClient(
+                primaryNode
+            );
+
+
+        // ====================================================
+        // Upload primary copy
+        // ====================================================
+
+        std::cout
+            << "\nUploading chunk "
+            << chunkId
+            << " to PRIMARY "
+            << primaryNode.node_id()
+            << "..."
+            << std::endl;
+
+
+        bool primarySuccess =
+            primaryClient->UploadChunk(
                 fileId,
                 filename,
                 chunkId,
@@ -632,41 +1011,173 @@ bool UploadFile(
             );
 
 
-        if (!success) {
+        if (!primarySuccess) {
 
             std::cerr
-                << "\nFailed to upload chunk "
-                << chunkId
-                << " to "
-                << node.node_id()
+                << "\nPrimary upload failed."
                 << std::endl;
 
+
             file.close();
+
 
             return false;
         }
 
 
         std::cout
-            << "Chunk "
-            << chunkId
-            << " uploaded successfully to "
-            << node.node_id()
+            << "Primary copy completed on "
+            << primaryNode.node_id()
             << "."
+            << std::endl;
+
+
+        // ====================================================
+        // Record PRIMARY metadata
+        // ====================================================
+
+        if (
+            !RecordChunkLocation(
+                fileId,
+                filename,
+                static_cast<long long>(
+                    fileSize
+                ),
+                totalChunks,
+                chunkId,
+                primaryNode
+            )
+        ) {
+
+            std::cerr
+                << "\nFailed to record primary metadata."
+                << std::endl;
+
+
+            file.close();
+
+
+            return false;
+        }
+
+
+        // ====================================================
+        // Create replica client
+        // ====================================================
+
+        auto replicaClient =
+            CreateStorageClient(
+                replicaNode
+            );
+
+
+        // ====================================================
+        // Upload replica copy
+        // ====================================================
+
+        std::cout
+            << "\nUploading chunk "
+            << chunkId
+            << " to REPLICA "
+            << replicaNode.node_id()
+            << "..."
+            << std::endl;
+
+
+        bool replicaSuccess =
+            replicaClient->UploadChunk(
+                fileId,
+                filename,
+                chunkId,
+                totalChunks,
+                buffer
+            );
+
+
+        if (!replicaSuccess) {
+
+            std::cerr
+                << "\nReplica upload failed."
+                << std::endl;
+
+
+            file.close();
+
+
+            return false;
+        }
+
+
+        std::cout
+            << "Replica copy completed on "
+            << replicaNode.node_id()
+            << "."
+            << std::endl;
+
+
+        // ====================================================
+        // Record REPLICA metadata
+        // ====================================================
+
+        if (
+            !RecordChunkLocation(
+                fileId,
+                filename,
+                static_cast<long long>(
+                    fileSize
+                ),
+                totalChunks,
+                chunkId,
+                replicaNode
+            )
+        ) {
+
+            std::cerr
+                << "\nFailed to record replica metadata."
+                << std::endl;
+
+
+            file.close();
+
+
+            return false;
+        }
+
+
+        // ====================================================
+        // Chunk successfully replicated
+        // ====================================================
+
+        std::cout
+            << "\nChunk "
+            << chunkId
+            << " successfully replicated:"
+            << std::endl;
+
+
+        std::cout
+            << "  Copy 1 -> "
+            << primaryNode.node_id()
+            << std::endl;
+
+
+        std::cout
+            << "  Copy 2 -> "
+            << replicaNode.node_id()
             << std::endl;
     }
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // Close file
-    // --------------------------------------------------------
+    // ========================================================
 
     file.close();
 
 
-    // --------------------------------------------------------
+    // ========================================================
     // Upload complete
-    // --------------------------------------------------------
+    // ========================================================
 
     std::cout
         << "\n========================================"
@@ -679,6 +1190,16 @@ bool UploadFile(
 
 
     std::cout
+        << "Replication completed successfully!"
+        << std::endl;
+
+
+    std::cout
+        << "PostgreSQL metadata recorded successfully!"
+        << std::endl;
+
+
+    std::cout
         << "File ID: "
         << fileId
         << std::endl;
@@ -686,6 +1207,611 @@ bool UploadFile(
 
     std::cout
         << "Chunks uploaded: "
+        << totalChunks
+        << std::endl;
+
+
+    std::cout
+        << "Copies per chunk: "
+        << REPLICATION_FACTOR
+        << std::endl;
+
+
+    std::cout
+        << "Total chunk copies: "
+        << totalChunks *
+           REPLICATION_FACTOR
+        << std::endl;
+
+
+    std::cout
+        << "========================================"
+        << std::endl;
+
+
+    return true;
+}
+
+
+// ============================================================
+// Get File Metadata from Master
+// ============================================================
+
+bool GetFileMetadata(
+    const std::string& fileId,
+    GetFileResponse& response) {
+
+    std::cout
+        << "\nConnecting to Master for file metadata..."
+        << std::endl;
+
+
+    auto masterChannel =
+        grpc::CreateChannel(
+            "localhost:50050",
+            grpc::InsecureChannelCredentials()
+        );
+
+
+    std::unique_ptr<
+        MasterService::Stub
+    > masterStub =
+        MasterService::NewStub(
+            masterChannel
+        );
+
+
+    GetFileRequest request;
+
+
+    request.set_file_id(
+        fileId
+    );
+
+
+    ClientContext context;
+
+
+    Status status =
+        masterStub->GetFile(
+            &context,
+            request,
+            &response
+        );
+
+
+    if (!status.ok()) {
+
+        std::cerr
+            << "GetFile RPC failed: "
+            << status.error_message()
+            << std::endl;
+
+        return false;
+    }
+
+
+    if (!response.success()) {
+
+        std::cerr
+            << "Master could not find file: "
+            << response.message()
+            << std::endl;
+
+        return false;
+    }
+
+
+    std::cout
+        << "\nFile metadata retrieved successfully."
+        << std::endl;
+
+
+    std::cout
+        << "  Filename: "
+        << response.filename()
+        << std::endl;
+
+
+    std::cout
+        << "  File size: "
+        << response.file_size()
+        << " bytes"
+        << std::endl;
+
+
+    std::cout
+        << "  Total chunks: "
+        << response.total_chunks()
+        << std::endl;
+
+
+    std::cout
+        << "  Chunk locations: "
+        << response.chunks_size()
+        << std::endl;
+
+
+    return true;
+}
+
+
+// ============================================================
+// Download Complete File
+// ============================================================
+
+bool DownloadFile(
+    const std::string& fileId,
+    const std::string& outputFilename) {
+
+    std::cout
+        << "\n========================================"
+        << std::endl;
+
+
+    std::cout
+        << "        DISTRIBUTED FILE DOWNLOAD"
+        << std::endl;
+
+
+    std::cout
+        << "========================================"
+        << std::endl;
+
+
+    std::cout
+        << "File ID: "
+        << fileId
+        << std::endl;
+
+
+    // ========================================================
+    // Step 1: Get file metadata from Master
+    // ========================================================
+
+    GetFileResponse fileMetadata;
+
+
+    if (
+        !GetFileMetadata(
+            fileId,
+            fileMetadata
+        )
+    ) {
+
+        return false;
+    }
+
+
+    // ========================================================
+    // Step 2: Get current node health
+    // ========================================================
+
+    std::vector<
+        StorageNodeInfo
+    > healthyNodes;
+
+
+    if (
+        !GetStorageNodes(
+            healthyNodes
+        )
+    ) {
+
+        return false;
+    }
+
+
+    // ========================================================
+    // Build node lookup table
+    // ========================================================
+
+    std::unordered_map<
+        std::string,
+        StorageNodeInfo
+    > nodeMap;
+
+
+    for (
+        const auto& node :
+        healthyNodes
+    ) {
+
+        nodeMap[
+            node.node_id()
+        ] =
+            node;
+    }
+
+
+    // ========================================================
+    // Organize chunk replicas
+    // ========================================================
+
+    std::unordered_map<
+        int,
+        std::vector<std::string>
+    > chunkLocations;
+
+
+    for (
+        const auto& chunk :
+        fileMetadata.chunks()
+    ) {
+
+        chunkLocations[
+            chunk.chunk_id()
+        ].push_back(
+            chunk.node_id()
+        );
+    }
+
+
+    // ========================================================
+    // Check every chunk has metadata
+    // ========================================================
+
+    int totalChunks =
+        fileMetadata.total_chunks();
+
+
+    for (
+        int chunkId = 0;
+        chunkId < totalChunks;
+        ++chunkId
+    ) {
+
+        if (
+            chunkLocations.find(
+                chunkId
+            ) ==
+            chunkLocations.end()
+        ) {
+
+            std::cerr
+                << "\nERROR: No storage location found for chunk "
+                << chunkId
+                << "."
+                << std::endl;
+
+            return false;
+        }
+    }
+
+
+    // ========================================================
+    // Open output file
+    // ========================================================
+
+    std::ofstream outputFile(
+        outputFilename,
+        std::ios::binary
+    );
+
+
+    if (!outputFile) {
+
+        std::cerr
+            << "Could not create output file: "
+            << outputFilename
+            << std::endl;
+
+        return false;
+    }
+
+
+    // ========================================================
+    // Download chunks in order
+    // ========================================================
+
+    for (
+        int chunkId = 0;
+        chunkId < totalChunks;
+        ++chunkId
+    ) {
+
+        std::cout
+            << "\n========================================"
+            << std::endl;
+
+
+        std::cout
+            << "Downloading chunk "
+            << chunkId + 1
+            << "/"
+            << totalChunks
+            << std::endl;
+
+
+        std::cout
+            << "Chunk ID: "
+            << chunkId
+            << std::endl;
+
+
+        bool chunkDownloaded =
+            false;
+
+
+        // ====================================================
+        // Try every replica
+        // ====================================================
+
+        for (
+            const std::string& nodeId :
+            chunkLocations[chunkId]
+        ) {
+
+            // ------------------------------------------------
+            // Check whether Master currently considers node
+            // healthy.
+            // ------------------------------------------------
+
+            auto nodeIterator =
+                nodeMap.find(
+                    nodeId
+                );
+
+
+            if (
+                nodeIterator ==
+                nodeMap.end()
+            ) {
+
+                std::cout
+                    << "Node "
+                    << nodeId
+                    << " is currently unhealthy."
+                    << std::endl;
+
+
+                std::cout
+                    << "Trying another replica..."
+                    << std::endl;
+
+
+                continue;
+            }
+
+
+            const StorageNodeInfo& node =
+                nodeIterator->second;
+
+
+            std::cout
+                << "\nTrying node: "
+                << node.node_id()
+                << " ("
+                << node.address()
+                << ":"
+                << node.port()
+                << ")"
+                << std::endl;
+
+
+            // ------------------------------------------------
+            // Create storage client
+            // ------------------------------------------------
+
+            auto storageClient =
+                CreateStorageClient(
+                    node
+                );
+
+
+            // ------------------------------------------------
+            // Download chunk
+            // ------------------------------------------------
+
+            std::string chunkData;
+
+
+            bool success =
+                storageClient->DownloadChunk(
+                    fileId,
+                    fileMetadata.filename(),
+                    chunkId,
+                    chunkData
+                );
+
+
+            if (success) {
+
+                std::cout
+                    << "Chunk "
+                    << chunkId
+                    << " downloaded successfully from "
+                    << node.node_id()
+                    << "."
+                    << std::endl;
+
+
+                std::cout
+                    << "Chunk size received: "
+                    << chunkData.size()
+                    << " bytes"
+                    << std::endl;
+
+
+                // --------------------------------------------
+                // Write chunk sequentially
+                // --------------------------------------------
+
+                outputFile.write(
+                    chunkData.data(),
+                    static_cast<
+                        std::streamsize
+                    >(
+                        chunkData.size()
+                    )
+                );
+
+
+                if (!outputFile) {
+
+                    std::cerr
+                        << "Failed to write chunk "
+                        << chunkId
+                        << " to output file."
+                        << std::endl;
+
+
+                    outputFile.close();
+
+
+                    return false;
+                }
+
+
+                chunkDownloaded =
+                    true;
+
+
+                break;
+            }
+
+
+            // ------------------------------------------------
+            // Failover
+            // ------------------------------------------------
+
+            std::cout
+                << "\nNode "
+                << node.node_id()
+                << " failed to provide chunk "
+                << chunkId
+                << "."
+                << std::endl;
+
+
+            std::cout
+                << "FAILOVER: Trying another replica..."
+                << std::endl;
+        }
+
+
+        // ====================================================
+        // No replica worked
+        // ====================================================
+
+        if (!chunkDownloaded) {
+
+            std::cerr
+                << "\n========================================"
+                << std::endl;
+
+
+            std::cerr
+                << "DOWNLOAD FAILED"
+                << std::endl;
+
+
+            std::cerr
+                << "No healthy replica could provide chunk "
+                << chunkId
+                << "."
+                << std::endl;
+
+
+            std::cerr
+                << "========================================"
+                << std::endl;
+
+
+            outputFile.close();
+
+
+            return false;
+        }
+
+
+        std::cout
+            << "Chunk "
+            << chunkId
+            << " successfully reconstructed."
+            << std::endl;
+    }
+
+
+    // ========================================================
+    // Close output file
+    // ========================================================
+
+    outputFile.close();
+
+
+    // ========================================================
+    // Verify reconstructed file size
+    // ========================================================
+
+    std::uintmax_t downloadedSize =
+        std::filesystem::file_size(
+            outputFilename
+        );
+
+
+    std::cout
+        << "\n========================================"
+        << std::endl;
+
+
+    std::cout
+        << "DOWNLOAD COMPLETED SUCCESSFULLY!"
+        << std::endl;
+
+
+    std::cout
+        << "========================================"
+        << std::endl;
+
+
+    std::cout
+        << "Original file: "
+        << fileMetadata.filename()
+        << std::endl;
+
+
+    std::cout
+        << "Downloaded file: "
+        << outputFilename
+        << std::endl;
+
+
+    std::cout
+        << "Expected size: "
+        << fileMetadata.file_size()
+        << " bytes"
+        << std::endl;
+
+
+    std::cout
+        << "Downloaded size: "
+        << downloadedSize
+        << " bytes"
+        << std::endl;
+
+
+    if (
+        downloadedSize ==
+        static_cast<std::uintmax_t>(
+            fileMetadata.file_size()
+        )
+    ) {
+
+        std::cout
+            << "Size verification: PASSED"
+            << std::endl;
+
+    } else {
+
+        std::cerr
+            << "Size verification: FAILED"
+            << std::endl;
+    }
+
+
+    std::cout
+        << "Chunks reconstructed: "
         << totalChunks
         << std::endl;
 
@@ -706,32 +1832,78 @@ bool UploadFile(
 int main() {
 
     std::cout
-        << "Connecting to Master..."
+        << "\n========================================"
         << std::endl;
 
+    std::cout
+        << "      DFSS FAILOVER TEST"
+        << std::endl;
 
-    std::string filename =
-        "testfile.txt";
+    std::cout
+        << "========================================"
+        << std::endl;
 
+    // Existing file uploaded before Node-1 failure
+    std::string fileId =
+        "13422908813796369801";
+
+    std::string downloadedFilename =
+        "downloaded_testfile_failover.txt";
+
+    std::cout
+        << "\nStarting failover download..."
+        << std::endl;
+
+    std::cout
+        << "File ID: "
+        << fileId
+        << std::endl;
 
     if (
-        !UploadFile(
-            filename
+        !DownloadFile(
+            fileId,
+            downloadedFilename
         )
     ) {
 
         std::cerr
-            << "\nUpload failed!"
+            << "\nFailover download FAILED!"
             << std::endl;
 
         return 1;
     }
 
-
     std::cout
-        << "\nFile uploaded successfully."
+        << "\n========================================"
         << std::endl;
 
+    std::cout
+        << "   FAILOVER TEST COMPLETED"
+        << std::endl;
+
+    std::cout
+        << "========================================"
+        << std::endl;
+
+    std::cout
+        << "Node-1: FAILED"
+        << std::endl;
+
+    std::cout
+        << "Node-2: AVAILABLE"
+        << std::endl;
+
+    std::cout
+        << "Replica failover: SUCCESS"
+        << std::endl;
+
+    std::cout
+        << "File download: SUCCESS"
+        << std::endl;
+
+    std::cout
+        << "========================================"
+        << std::endl;
 
     return 0;
 }

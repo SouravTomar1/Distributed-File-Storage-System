@@ -29,7 +29,7 @@
 namespace storage {
 
 // ============================================================
-// Storage Service
+// SERVICES
 // ============================================================
 //
 class StorageService final {
@@ -396,10 +396,6 @@ class StorageService final {
   typedef WithStreamedUnaryMethod_UploadFile<WithStreamedUnaryMethod_DownloadFile<Service > > StreamedService;
 };
 
-// ============================================================
-// Master Service
-// ============================================================
-//
 class MasterService final {
  public:
   static constexpr char const* service_full_name() {
@@ -415,6 +411,13 @@ class MasterService final {
     std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::storage::RegisterNodeResponse>> PrepareAsyncRegisterNode(::grpc::ClientContext* context, const ::storage::RegisterNodeRequest& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::storage::RegisterNodeResponse>>(PrepareAsyncRegisterNodeRaw(context, request, cq));
     }
+    virtual ::grpc::Status Heartbeat(::grpc::ClientContext* context, const ::storage::HeartbeatRequest& request, ::storage::HeartbeatResponse* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::storage::HeartbeatResponse>> AsyncHeartbeat(::grpc::ClientContext* context, const ::storage::HeartbeatRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::storage::HeartbeatResponse>>(AsyncHeartbeatRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::storage::HeartbeatResponse>> PrepareAsyncHeartbeat(::grpc::ClientContext* context, const ::storage::HeartbeatRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::storage::HeartbeatResponse>>(PrepareAsyncHeartbeatRaw(context, request, cq));
+    }
     virtual ::grpc::Status CheckNodeHealth(::grpc::ClientContext* context, const ::storage::NodeHealthRequest& request, ::storage::NodeHealthResponse* response) = 0;
     std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::storage::NodeHealthResponse>> AsyncCheckNodeHealth(::grpc::ClientContext* context, const ::storage::NodeHealthRequest& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::storage::NodeHealthResponse>>(AsyncCheckNodeHealthRaw(context, request, cq));
@@ -429,15 +432,35 @@ class MasterService final {
     std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::storage::GetNodesResponse>> PrepareAsyncGetNodes(::grpc::ClientContext* context, const ::storage::GetNodesRequest& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::storage::GetNodesResponse>>(PrepareAsyncGetNodesRaw(context, request, cq));
     }
+    virtual ::grpc::Status RecordChunk(::grpc::ClientContext* context, const ::storage::RecordChunkRequest& request, ::storage::RecordChunkResponse* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::storage::RecordChunkResponse>> AsyncRecordChunk(::grpc::ClientContext* context, const ::storage::RecordChunkRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::storage::RecordChunkResponse>>(AsyncRecordChunkRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::storage::RecordChunkResponse>> PrepareAsyncRecordChunk(::grpc::ClientContext* context, const ::storage::RecordChunkRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::storage::RecordChunkResponse>>(PrepareAsyncRecordChunkRaw(context, request, cq));
+    }
+    virtual ::grpc::Status GetFile(::grpc::ClientContext* context, const ::storage::GetFileRequest& request, ::storage::GetFileResponse* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::storage::GetFileResponse>> AsyncGetFile(::grpc::ClientContext* context, const ::storage::GetFileRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::storage::GetFileResponse>>(AsyncGetFileRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::storage::GetFileResponse>> PrepareAsyncGetFile(::grpc::ClientContext* context, const ::storage::GetFileRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::storage::GetFileResponse>>(PrepareAsyncGetFileRaw(context, request, cq));
+    }
     class async_interface {
      public:
       virtual ~async_interface() {}
       virtual void RegisterNode(::grpc::ClientContext* context, const ::storage::RegisterNodeRequest* request, ::storage::RegisterNodeResponse* response, std::function<void(::grpc::Status)>) = 0;
       virtual void RegisterNode(::grpc::ClientContext* context, const ::storage::RegisterNodeRequest* request, ::storage::RegisterNodeResponse* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      virtual void Heartbeat(::grpc::ClientContext* context, const ::storage::HeartbeatRequest* request, ::storage::HeartbeatResponse* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void Heartbeat(::grpc::ClientContext* context, const ::storage::HeartbeatRequest* request, ::storage::HeartbeatResponse* response, ::grpc::ClientUnaryReactor* reactor) = 0;
       virtual void CheckNodeHealth(::grpc::ClientContext* context, const ::storage::NodeHealthRequest* request, ::storage::NodeHealthResponse* response, std::function<void(::grpc::Status)>) = 0;
       virtual void CheckNodeHealth(::grpc::ClientContext* context, const ::storage::NodeHealthRequest* request, ::storage::NodeHealthResponse* response, ::grpc::ClientUnaryReactor* reactor) = 0;
       virtual void GetNodes(::grpc::ClientContext* context, const ::storage::GetNodesRequest* request, ::storage::GetNodesResponse* response, std::function<void(::grpc::Status)>) = 0;
       virtual void GetNodes(::grpc::ClientContext* context, const ::storage::GetNodesRequest* request, ::storage::GetNodesResponse* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      virtual void RecordChunk(::grpc::ClientContext* context, const ::storage::RecordChunkRequest* request, ::storage::RecordChunkResponse* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void RecordChunk(::grpc::ClientContext* context, const ::storage::RecordChunkRequest* request, ::storage::RecordChunkResponse* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+      virtual void GetFile(::grpc::ClientContext* context, const ::storage::GetFileRequest* request, ::storage::GetFileResponse* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void GetFile(::grpc::ClientContext* context, const ::storage::GetFileRequest* request, ::storage::GetFileResponse* response, ::grpc::ClientUnaryReactor* reactor) = 0;
     };
     typedef class async_interface experimental_async_interface;
     virtual class async_interface* async() { return nullptr; }
@@ -445,10 +468,16 @@ class MasterService final {
    private:
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::storage::RegisterNodeResponse>* AsyncRegisterNodeRaw(::grpc::ClientContext* context, const ::storage::RegisterNodeRequest& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::storage::RegisterNodeResponse>* PrepareAsyncRegisterNodeRaw(::grpc::ClientContext* context, const ::storage::RegisterNodeRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::storage::HeartbeatResponse>* AsyncHeartbeatRaw(::grpc::ClientContext* context, const ::storage::HeartbeatRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::storage::HeartbeatResponse>* PrepareAsyncHeartbeatRaw(::grpc::ClientContext* context, const ::storage::HeartbeatRequest& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::storage::NodeHealthResponse>* AsyncCheckNodeHealthRaw(::grpc::ClientContext* context, const ::storage::NodeHealthRequest& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::storage::NodeHealthResponse>* PrepareAsyncCheckNodeHealthRaw(::grpc::ClientContext* context, const ::storage::NodeHealthRequest& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::storage::GetNodesResponse>* AsyncGetNodesRaw(::grpc::ClientContext* context, const ::storage::GetNodesRequest& request, ::grpc::CompletionQueue* cq) = 0;
     virtual ::grpc::ClientAsyncResponseReaderInterface< ::storage::GetNodesResponse>* PrepareAsyncGetNodesRaw(::grpc::ClientContext* context, const ::storage::GetNodesRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::storage::RecordChunkResponse>* AsyncRecordChunkRaw(::grpc::ClientContext* context, const ::storage::RecordChunkRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::storage::RecordChunkResponse>* PrepareAsyncRecordChunkRaw(::grpc::ClientContext* context, const ::storage::RecordChunkRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::storage::GetFileResponse>* AsyncGetFileRaw(::grpc::ClientContext* context, const ::storage::GetFileRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::storage::GetFileResponse>* PrepareAsyncGetFileRaw(::grpc::ClientContext* context, const ::storage::GetFileRequest& request, ::grpc::CompletionQueue* cq) = 0;
   };
   class Stub final : public StubInterface {
    public:
@@ -459,6 +488,13 @@ class MasterService final {
     }
     std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::storage::RegisterNodeResponse>> PrepareAsyncRegisterNode(::grpc::ClientContext* context, const ::storage::RegisterNodeRequest& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::storage::RegisterNodeResponse>>(PrepareAsyncRegisterNodeRaw(context, request, cq));
+    }
+    ::grpc::Status Heartbeat(::grpc::ClientContext* context, const ::storage::HeartbeatRequest& request, ::storage::HeartbeatResponse* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::storage::HeartbeatResponse>> AsyncHeartbeat(::grpc::ClientContext* context, const ::storage::HeartbeatRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::storage::HeartbeatResponse>>(AsyncHeartbeatRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::storage::HeartbeatResponse>> PrepareAsyncHeartbeat(::grpc::ClientContext* context, const ::storage::HeartbeatRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::storage::HeartbeatResponse>>(PrepareAsyncHeartbeatRaw(context, request, cq));
     }
     ::grpc::Status CheckNodeHealth(::grpc::ClientContext* context, const ::storage::NodeHealthRequest& request, ::storage::NodeHealthResponse* response) override;
     std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::storage::NodeHealthResponse>> AsyncCheckNodeHealth(::grpc::ClientContext* context, const ::storage::NodeHealthRequest& request, ::grpc::CompletionQueue* cq) {
@@ -474,15 +510,35 @@ class MasterService final {
     std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::storage::GetNodesResponse>> PrepareAsyncGetNodes(::grpc::ClientContext* context, const ::storage::GetNodesRequest& request, ::grpc::CompletionQueue* cq) {
       return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::storage::GetNodesResponse>>(PrepareAsyncGetNodesRaw(context, request, cq));
     }
+    ::grpc::Status RecordChunk(::grpc::ClientContext* context, const ::storage::RecordChunkRequest& request, ::storage::RecordChunkResponse* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::storage::RecordChunkResponse>> AsyncRecordChunk(::grpc::ClientContext* context, const ::storage::RecordChunkRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::storage::RecordChunkResponse>>(AsyncRecordChunkRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::storage::RecordChunkResponse>> PrepareAsyncRecordChunk(::grpc::ClientContext* context, const ::storage::RecordChunkRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::storage::RecordChunkResponse>>(PrepareAsyncRecordChunkRaw(context, request, cq));
+    }
+    ::grpc::Status GetFile(::grpc::ClientContext* context, const ::storage::GetFileRequest& request, ::storage::GetFileResponse* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::storage::GetFileResponse>> AsyncGetFile(::grpc::ClientContext* context, const ::storage::GetFileRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::storage::GetFileResponse>>(AsyncGetFileRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::storage::GetFileResponse>> PrepareAsyncGetFile(::grpc::ClientContext* context, const ::storage::GetFileRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::storage::GetFileResponse>>(PrepareAsyncGetFileRaw(context, request, cq));
+    }
     class async final :
       public StubInterface::async_interface {
      public:
       void RegisterNode(::grpc::ClientContext* context, const ::storage::RegisterNodeRequest* request, ::storage::RegisterNodeResponse* response, std::function<void(::grpc::Status)>) override;
       void RegisterNode(::grpc::ClientContext* context, const ::storage::RegisterNodeRequest* request, ::storage::RegisterNodeResponse* response, ::grpc::ClientUnaryReactor* reactor) override;
+      void Heartbeat(::grpc::ClientContext* context, const ::storage::HeartbeatRequest* request, ::storage::HeartbeatResponse* response, std::function<void(::grpc::Status)>) override;
+      void Heartbeat(::grpc::ClientContext* context, const ::storage::HeartbeatRequest* request, ::storage::HeartbeatResponse* response, ::grpc::ClientUnaryReactor* reactor) override;
       void CheckNodeHealth(::grpc::ClientContext* context, const ::storage::NodeHealthRequest* request, ::storage::NodeHealthResponse* response, std::function<void(::grpc::Status)>) override;
       void CheckNodeHealth(::grpc::ClientContext* context, const ::storage::NodeHealthRequest* request, ::storage::NodeHealthResponse* response, ::grpc::ClientUnaryReactor* reactor) override;
       void GetNodes(::grpc::ClientContext* context, const ::storage::GetNodesRequest* request, ::storage::GetNodesResponse* response, std::function<void(::grpc::Status)>) override;
       void GetNodes(::grpc::ClientContext* context, const ::storage::GetNodesRequest* request, ::storage::GetNodesResponse* response, ::grpc::ClientUnaryReactor* reactor) override;
+      void RecordChunk(::grpc::ClientContext* context, const ::storage::RecordChunkRequest* request, ::storage::RecordChunkResponse* response, std::function<void(::grpc::Status)>) override;
+      void RecordChunk(::grpc::ClientContext* context, const ::storage::RecordChunkRequest* request, ::storage::RecordChunkResponse* response, ::grpc::ClientUnaryReactor* reactor) override;
+      void GetFile(::grpc::ClientContext* context, const ::storage::GetFileRequest* request, ::storage::GetFileResponse* response, std::function<void(::grpc::Status)>) override;
+      void GetFile(::grpc::ClientContext* context, const ::storage::GetFileRequest* request, ::storage::GetFileResponse* response, ::grpc::ClientUnaryReactor* reactor) override;
      private:
       friend class Stub;
       explicit async(Stub* stub): stub_(stub) { }
@@ -496,13 +552,22 @@ class MasterService final {
     class async async_stub_{this};
     ::grpc::ClientAsyncResponseReader< ::storage::RegisterNodeResponse>* AsyncRegisterNodeRaw(::grpc::ClientContext* context, const ::storage::RegisterNodeRequest& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::storage::RegisterNodeResponse>* PrepareAsyncRegisterNodeRaw(::grpc::ClientContext* context, const ::storage::RegisterNodeRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::storage::HeartbeatResponse>* AsyncHeartbeatRaw(::grpc::ClientContext* context, const ::storage::HeartbeatRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::storage::HeartbeatResponse>* PrepareAsyncHeartbeatRaw(::grpc::ClientContext* context, const ::storage::HeartbeatRequest& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::storage::NodeHealthResponse>* AsyncCheckNodeHealthRaw(::grpc::ClientContext* context, const ::storage::NodeHealthRequest& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::storage::NodeHealthResponse>* PrepareAsyncCheckNodeHealthRaw(::grpc::ClientContext* context, const ::storage::NodeHealthRequest& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::storage::GetNodesResponse>* AsyncGetNodesRaw(::grpc::ClientContext* context, const ::storage::GetNodesRequest& request, ::grpc::CompletionQueue* cq) override;
     ::grpc::ClientAsyncResponseReader< ::storage::GetNodesResponse>* PrepareAsyncGetNodesRaw(::grpc::ClientContext* context, const ::storage::GetNodesRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::storage::RecordChunkResponse>* AsyncRecordChunkRaw(::grpc::ClientContext* context, const ::storage::RecordChunkRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::storage::RecordChunkResponse>* PrepareAsyncRecordChunkRaw(::grpc::ClientContext* context, const ::storage::RecordChunkRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::storage::GetFileResponse>* AsyncGetFileRaw(::grpc::ClientContext* context, const ::storage::GetFileRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::storage::GetFileResponse>* PrepareAsyncGetFileRaw(::grpc::ClientContext* context, const ::storage::GetFileRequest& request, ::grpc::CompletionQueue* cq) override;
     const ::grpc::internal::RpcMethod rpcmethod_RegisterNode_;
+    const ::grpc::internal::RpcMethod rpcmethod_Heartbeat_;
     const ::grpc::internal::RpcMethod rpcmethod_CheckNodeHealth_;
     const ::grpc::internal::RpcMethod rpcmethod_GetNodes_;
+    const ::grpc::internal::RpcMethod rpcmethod_RecordChunk_;
+    const ::grpc::internal::RpcMethod rpcmethod_GetFile_;
   };
   static std::unique_ptr<Stub> NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options = ::grpc::StubOptions());
 
@@ -511,8 +576,11 @@ class MasterService final {
     Service();
     virtual ~Service();
     virtual ::grpc::Status RegisterNode(::grpc::ServerContext* context, const ::storage::RegisterNodeRequest* request, ::storage::RegisterNodeResponse* response);
+    virtual ::grpc::Status Heartbeat(::grpc::ServerContext* context, const ::storage::HeartbeatRequest* request, ::storage::HeartbeatResponse* response);
     virtual ::grpc::Status CheckNodeHealth(::grpc::ServerContext* context, const ::storage::NodeHealthRequest* request, ::storage::NodeHealthResponse* response);
     virtual ::grpc::Status GetNodes(::grpc::ServerContext* context, const ::storage::GetNodesRequest* request, ::storage::GetNodesResponse* response);
+    virtual ::grpc::Status RecordChunk(::grpc::ServerContext* context, const ::storage::RecordChunkRequest* request, ::storage::RecordChunkResponse* response);
+    virtual ::grpc::Status GetFile(::grpc::ServerContext* context, const ::storage::GetFileRequest* request, ::storage::GetFileResponse* response);
   };
   template <class BaseClass>
   class WithAsyncMethod_RegisterNode : public BaseClass {
@@ -535,12 +603,32 @@ class MasterService final {
     }
   };
   template <class BaseClass>
+  class WithAsyncMethod_Heartbeat : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithAsyncMethod_Heartbeat() {
+      ::grpc::Service::MarkMethodAsync(1);
+    }
+    ~WithAsyncMethod_Heartbeat() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status Heartbeat(::grpc::ServerContext* /*context*/, const ::storage::HeartbeatRequest* /*request*/, ::storage::HeartbeatResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestHeartbeat(::grpc::ServerContext* context, ::storage::HeartbeatRequest* request, ::grpc::ServerAsyncResponseWriter< ::storage::HeartbeatResponse>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(1, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  template <class BaseClass>
   class WithAsyncMethod_CheckNodeHealth : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_CheckNodeHealth() {
-      ::grpc::Service::MarkMethodAsync(1);
+      ::grpc::Service::MarkMethodAsync(2);
     }
     ~WithAsyncMethod_CheckNodeHealth() override {
       BaseClassMustBeDerivedFromService(this);
@@ -551,7 +639,7 @@ class MasterService final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestCheckNodeHealth(::grpc::ServerContext* context, ::storage::NodeHealthRequest* request, ::grpc::ServerAsyncResponseWriter< ::storage::NodeHealthResponse>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(1, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(2, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -560,7 +648,7 @@ class MasterService final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithAsyncMethod_GetNodes() {
-      ::grpc::Service::MarkMethodAsync(2);
+      ::grpc::Service::MarkMethodAsync(3);
     }
     ~WithAsyncMethod_GetNodes() override {
       BaseClassMustBeDerivedFromService(this);
@@ -571,10 +659,50 @@ class MasterService final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestGetNodes(::grpc::ServerContext* context, ::storage::GetNodesRequest* request, ::grpc::ServerAsyncResponseWriter< ::storage::GetNodesResponse>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(2, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(3, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
-  typedef WithAsyncMethod_RegisterNode<WithAsyncMethod_CheckNodeHealth<WithAsyncMethod_GetNodes<Service > > > AsyncService;
+  template <class BaseClass>
+  class WithAsyncMethod_RecordChunk : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithAsyncMethod_RecordChunk() {
+      ::grpc::Service::MarkMethodAsync(4);
+    }
+    ~WithAsyncMethod_RecordChunk() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status RecordChunk(::grpc::ServerContext* /*context*/, const ::storage::RecordChunkRequest* /*request*/, ::storage::RecordChunkResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestRecordChunk(::grpc::ServerContext* context, ::storage::RecordChunkRequest* request, ::grpc::ServerAsyncResponseWriter< ::storage::RecordChunkResponse>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(4, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  template <class BaseClass>
+  class WithAsyncMethod_GetFile : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithAsyncMethod_GetFile() {
+      ::grpc::Service::MarkMethodAsync(5);
+    }
+    ~WithAsyncMethod_GetFile() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status GetFile(::grpc::ServerContext* /*context*/, const ::storage::GetFileRequest* /*request*/, ::storage::GetFileResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestGetFile(::grpc::ServerContext* context, ::storage::GetFileRequest* request, ::grpc::ServerAsyncResponseWriter< ::storage::GetFileResponse>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(5, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  typedef WithAsyncMethod_RegisterNode<WithAsyncMethod_Heartbeat<WithAsyncMethod_CheckNodeHealth<WithAsyncMethod_GetNodes<WithAsyncMethod_RecordChunk<WithAsyncMethod_GetFile<Service > > > > > > AsyncService;
   template <class BaseClass>
   class WithCallbackMethod_RegisterNode : public BaseClass {
    private:
@@ -603,18 +731,45 @@ class MasterService final {
       ::grpc::CallbackServerContext* /*context*/, const ::storage::RegisterNodeRequest* /*request*/, ::storage::RegisterNodeResponse* /*response*/)  { return nullptr; }
   };
   template <class BaseClass>
+  class WithCallbackMethod_Heartbeat : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithCallbackMethod_Heartbeat() {
+      ::grpc::Service::MarkMethodCallback(1,
+          new ::grpc::internal::CallbackUnaryHandler< ::storage::HeartbeatRequest, ::storage::HeartbeatResponse>(
+            [this](
+                   ::grpc::CallbackServerContext* context, const ::storage::HeartbeatRequest* request, ::storage::HeartbeatResponse* response) { return this->Heartbeat(context, request, response); }));}
+    void SetMessageAllocatorFor_Heartbeat(
+        ::grpc::MessageAllocator< ::storage::HeartbeatRequest, ::storage::HeartbeatResponse>* allocator) {
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(1);
+      static_cast<::grpc::internal::CallbackUnaryHandler< ::storage::HeartbeatRequest, ::storage::HeartbeatResponse>*>(handler)
+              ->SetMessageAllocator(allocator);
+    }
+    ~WithCallbackMethod_Heartbeat() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status Heartbeat(::grpc::ServerContext* /*context*/, const ::storage::HeartbeatRequest* /*request*/, ::storage::HeartbeatResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual ::grpc::ServerUnaryReactor* Heartbeat(
+      ::grpc::CallbackServerContext* /*context*/, const ::storage::HeartbeatRequest* /*request*/, ::storage::HeartbeatResponse* /*response*/)  { return nullptr; }
+  };
+  template <class BaseClass>
   class WithCallbackMethod_CheckNodeHealth : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithCallbackMethod_CheckNodeHealth() {
-      ::grpc::Service::MarkMethodCallback(1,
+      ::grpc::Service::MarkMethodCallback(2,
           new ::grpc::internal::CallbackUnaryHandler< ::storage::NodeHealthRequest, ::storage::NodeHealthResponse>(
             [this](
                    ::grpc::CallbackServerContext* context, const ::storage::NodeHealthRequest* request, ::storage::NodeHealthResponse* response) { return this->CheckNodeHealth(context, request, response); }));}
     void SetMessageAllocatorFor_CheckNodeHealth(
         ::grpc::MessageAllocator< ::storage::NodeHealthRequest, ::storage::NodeHealthResponse>* allocator) {
-      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(1);
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(2);
       static_cast<::grpc::internal::CallbackUnaryHandler< ::storage::NodeHealthRequest, ::storage::NodeHealthResponse>*>(handler)
               ->SetMessageAllocator(allocator);
     }
@@ -635,13 +790,13 @@ class MasterService final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithCallbackMethod_GetNodes() {
-      ::grpc::Service::MarkMethodCallback(2,
+      ::grpc::Service::MarkMethodCallback(3,
           new ::grpc::internal::CallbackUnaryHandler< ::storage::GetNodesRequest, ::storage::GetNodesResponse>(
             [this](
                    ::grpc::CallbackServerContext* context, const ::storage::GetNodesRequest* request, ::storage::GetNodesResponse* response) { return this->GetNodes(context, request, response); }));}
     void SetMessageAllocatorFor_GetNodes(
         ::grpc::MessageAllocator< ::storage::GetNodesRequest, ::storage::GetNodesResponse>* allocator) {
-      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(2);
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(3);
       static_cast<::grpc::internal::CallbackUnaryHandler< ::storage::GetNodesRequest, ::storage::GetNodesResponse>*>(handler)
               ->SetMessageAllocator(allocator);
     }
@@ -656,7 +811,61 @@ class MasterService final {
     virtual ::grpc::ServerUnaryReactor* GetNodes(
       ::grpc::CallbackServerContext* /*context*/, const ::storage::GetNodesRequest* /*request*/, ::storage::GetNodesResponse* /*response*/)  { return nullptr; }
   };
-  typedef WithCallbackMethod_RegisterNode<WithCallbackMethod_CheckNodeHealth<WithCallbackMethod_GetNodes<Service > > > CallbackService;
+  template <class BaseClass>
+  class WithCallbackMethod_RecordChunk : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithCallbackMethod_RecordChunk() {
+      ::grpc::Service::MarkMethodCallback(4,
+          new ::grpc::internal::CallbackUnaryHandler< ::storage::RecordChunkRequest, ::storage::RecordChunkResponse>(
+            [this](
+                   ::grpc::CallbackServerContext* context, const ::storage::RecordChunkRequest* request, ::storage::RecordChunkResponse* response) { return this->RecordChunk(context, request, response); }));}
+    void SetMessageAllocatorFor_RecordChunk(
+        ::grpc::MessageAllocator< ::storage::RecordChunkRequest, ::storage::RecordChunkResponse>* allocator) {
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(4);
+      static_cast<::grpc::internal::CallbackUnaryHandler< ::storage::RecordChunkRequest, ::storage::RecordChunkResponse>*>(handler)
+              ->SetMessageAllocator(allocator);
+    }
+    ~WithCallbackMethod_RecordChunk() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status RecordChunk(::grpc::ServerContext* /*context*/, const ::storage::RecordChunkRequest* /*request*/, ::storage::RecordChunkResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual ::grpc::ServerUnaryReactor* RecordChunk(
+      ::grpc::CallbackServerContext* /*context*/, const ::storage::RecordChunkRequest* /*request*/, ::storage::RecordChunkResponse* /*response*/)  { return nullptr; }
+  };
+  template <class BaseClass>
+  class WithCallbackMethod_GetFile : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithCallbackMethod_GetFile() {
+      ::grpc::Service::MarkMethodCallback(5,
+          new ::grpc::internal::CallbackUnaryHandler< ::storage::GetFileRequest, ::storage::GetFileResponse>(
+            [this](
+                   ::grpc::CallbackServerContext* context, const ::storage::GetFileRequest* request, ::storage::GetFileResponse* response) { return this->GetFile(context, request, response); }));}
+    void SetMessageAllocatorFor_GetFile(
+        ::grpc::MessageAllocator< ::storage::GetFileRequest, ::storage::GetFileResponse>* allocator) {
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(5);
+      static_cast<::grpc::internal::CallbackUnaryHandler< ::storage::GetFileRequest, ::storage::GetFileResponse>*>(handler)
+              ->SetMessageAllocator(allocator);
+    }
+    ~WithCallbackMethod_GetFile() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status GetFile(::grpc::ServerContext* /*context*/, const ::storage::GetFileRequest* /*request*/, ::storage::GetFileResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual ::grpc::ServerUnaryReactor* GetFile(
+      ::grpc::CallbackServerContext* /*context*/, const ::storage::GetFileRequest* /*request*/, ::storage::GetFileResponse* /*response*/)  { return nullptr; }
+  };
+  typedef WithCallbackMethod_RegisterNode<WithCallbackMethod_Heartbeat<WithCallbackMethod_CheckNodeHealth<WithCallbackMethod_GetNodes<WithCallbackMethod_RecordChunk<WithCallbackMethod_GetFile<Service > > > > > > CallbackService;
   typedef CallbackService ExperimentalCallbackService;
   template <class BaseClass>
   class WithGenericMethod_RegisterNode : public BaseClass {
@@ -676,12 +885,29 @@ class MasterService final {
     }
   };
   template <class BaseClass>
+  class WithGenericMethod_Heartbeat : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithGenericMethod_Heartbeat() {
+      ::grpc::Service::MarkMethodGeneric(1);
+    }
+    ~WithGenericMethod_Heartbeat() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status Heartbeat(::grpc::ServerContext* /*context*/, const ::storage::HeartbeatRequest* /*request*/, ::storage::HeartbeatResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+  };
+  template <class BaseClass>
   class WithGenericMethod_CheckNodeHealth : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_CheckNodeHealth() {
-      ::grpc::Service::MarkMethodGeneric(1);
+      ::grpc::Service::MarkMethodGeneric(2);
     }
     ~WithGenericMethod_CheckNodeHealth() override {
       BaseClassMustBeDerivedFromService(this);
@@ -698,13 +924,47 @@ class MasterService final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithGenericMethod_GetNodes() {
-      ::grpc::Service::MarkMethodGeneric(2);
+      ::grpc::Service::MarkMethodGeneric(3);
     }
     ~WithGenericMethod_GetNodes() override {
       BaseClassMustBeDerivedFromService(this);
     }
     // disable synchronous version of this method
     ::grpc::Status GetNodes(::grpc::ServerContext* /*context*/, const ::storage::GetNodesRequest* /*request*/, ::storage::GetNodesResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+  };
+  template <class BaseClass>
+  class WithGenericMethod_RecordChunk : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithGenericMethod_RecordChunk() {
+      ::grpc::Service::MarkMethodGeneric(4);
+    }
+    ~WithGenericMethod_RecordChunk() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status RecordChunk(::grpc::ServerContext* /*context*/, const ::storage::RecordChunkRequest* /*request*/, ::storage::RecordChunkResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+  };
+  template <class BaseClass>
+  class WithGenericMethod_GetFile : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithGenericMethod_GetFile() {
+      ::grpc::Service::MarkMethodGeneric(5);
+    }
+    ~WithGenericMethod_GetFile() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status GetFile(::grpc::ServerContext* /*context*/, const ::storage::GetFileRequest* /*request*/, ::storage::GetFileResponse* /*response*/) override {
       abort();
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
@@ -730,12 +990,32 @@ class MasterService final {
     }
   };
   template <class BaseClass>
+  class WithRawMethod_Heartbeat : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithRawMethod_Heartbeat() {
+      ::grpc::Service::MarkMethodRaw(1);
+    }
+    ~WithRawMethod_Heartbeat() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status Heartbeat(::grpc::ServerContext* /*context*/, const ::storage::HeartbeatRequest* /*request*/, ::storage::HeartbeatResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestHeartbeat(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(1, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  template <class BaseClass>
   class WithRawMethod_CheckNodeHealth : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_CheckNodeHealth() {
-      ::grpc::Service::MarkMethodRaw(1);
+      ::grpc::Service::MarkMethodRaw(2);
     }
     ~WithRawMethod_CheckNodeHealth() override {
       BaseClassMustBeDerivedFromService(this);
@@ -746,7 +1026,7 @@ class MasterService final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestCheckNodeHealth(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(1, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(2, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -755,7 +1035,7 @@ class MasterService final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawMethod_GetNodes() {
-      ::grpc::Service::MarkMethodRaw(2);
+      ::grpc::Service::MarkMethodRaw(3);
     }
     ~WithRawMethod_GetNodes() override {
       BaseClassMustBeDerivedFromService(this);
@@ -766,7 +1046,47 @@ class MasterService final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     void RequestGetNodes(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
-      ::grpc::Service::RequestAsyncUnary(2, context, request, response, new_call_cq, notification_cq, tag);
+      ::grpc::Service::RequestAsyncUnary(3, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  template <class BaseClass>
+  class WithRawMethod_RecordChunk : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithRawMethod_RecordChunk() {
+      ::grpc::Service::MarkMethodRaw(4);
+    }
+    ~WithRawMethod_RecordChunk() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status RecordChunk(::grpc::ServerContext* /*context*/, const ::storage::RecordChunkRequest* /*request*/, ::storage::RecordChunkResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestRecordChunk(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(4, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  template <class BaseClass>
+  class WithRawMethod_GetFile : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithRawMethod_GetFile() {
+      ::grpc::Service::MarkMethodRaw(5);
+    }
+    ~WithRawMethod_GetFile() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status GetFile(::grpc::ServerContext* /*context*/, const ::storage::GetFileRequest* /*request*/, ::storage::GetFileResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestGetFile(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(5, context, request, response, new_call_cq, notification_cq, tag);
     }
   };
   template <class BaseClass>
@@ -792,12 +1112,34 @@ class MasterService final {
       ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
   };
   template <class BaseClass>
+  class WithRawCallbackMethod_Heartbeat : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithRawCallbackMethod_Heartbeat() {
+      ::grpc::Service::MarkMethodRawCallback(1,
+          new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+            [this](
+                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->Heartbeat(context, request, response); }));
+    }
+    ~WithRawCallbackMethod_Heartbeat() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status Heartbeat(::grpc::ServerContext* /*context*/, const ::storage::HeartbeatRequest* /*request*/, ::storage::HeartbeatResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual ::grpc::ServerUnaryReactor* Heartbeat(
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+  };
+  template <class BaseClass>
   class WithRawCallbackMethod_CheckNodeHealth : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawCallbackMethod_CheckNodeHealth() {
-      ::grpc::Service::MarkMethodRawCallback(1,
+      ::grpc::Service::MarkMethodRawCallback(2,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
                    ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->CheckNodeHealth(context, request, response); }));
@@ -819,7 +1161,7 @@ class MasterService final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithRawCallbackMethod_GetNodes() {
-      ::grpc::Service::MarkMethodRawCallback(2,
+      ::grpc::Service::MarkMethodRawCallback(3,
           new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
             [this](
                    ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->GetNodes(context, request, response); }));
@@ -833,6 +1175,50 @@ class MasterService final {
       return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
     }
     virtual ::grpc::ServerUnaryReactor* GetNodes(
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+  };
+  template <class BaseClass>
+  class WithRawCallbackMethod_RecordChunk : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithRawCallbackMethod_RecordChunk() {
+      ::grpc::Service::MarkMethodRawCallback(4,
+          new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+            [this](
+                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->RecordChunk(context, request, response); }));
+    }
+    ~WithRawCallbackMethod_RecordChunk() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status RecordChunk(::grpc::ServerContext* /*context*/, const ::storage::RecordChunkRequest* /*request*/, ::storage::RecordChunkResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual ::grpc::ServerUnaryReactor* RecordChunk(
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+  };
+  template <class BaseClass>
+  class WithRawCallbackMethod_GetFile : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithRawCallbackMethod_GetFile() {
+      ::grpc::Service::MarkMethodRawCallback(5,
+          new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+            [this](
+                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->GetFile(context, request, response); }));
+    }
+    ~WithRawCallbackMethod_GetFile() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status GetFile(::grpc::ServerContext* /*context*/, const ::storage::GetFileRequest* /*request*/, ::storage::GetFileResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual ::grpc::ServerUnaryReactor* GetFile(
       ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
   };
   template <class BaseClass>
@@ -863,12 +1249,39 @@ class MasterService final {
     virtual ::grpc::Status StreamedRegisterNode(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::storage::RegisterNodeRequest,::storage::RegisterNodeResponse>* server_unary_streamer) = 0;
   };
   template <class BaseClass>
+  class WithStreamedUnaryMethod_Heartbeat : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithStreamedUnaryMethod_Heartbeat() {
+      ::grpc::Service::MarkMethodStreamed(1,
+        new ::grpc::internal::StreamedUnaryHandler<
+          ::storage::HeartbeatRequest, ::storage::HeartbeatResponse>(
+            [this](::grpc::ServerContext* context,
+                   ::grpc::ServerUnaryStreamer<
+                     ::storage::HeartbeatRequest, ::storage::HeartbeatResponse>* streamer) {
+                       return this->StreamedHeartbeat(context,
+                         streamer);
+                  }));
+    }
+    ~WithStreamedUnaryMethod_Heartbeat() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable regular version of this method
+    ::grpc::Status Heartbeat(::grpc::ServerContext* /*context*/, const ::storage::HeartbeatRequest* /*request*/, ::storage::HeartbeatResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    // replace default version of method with streamed unary
+    virtual ::grpc::Status StreamedHeartbeat(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::storage::HeartbeatRequest,::storage::HeartbeatResponse>* server_unary_streamer) = 0;
+  };
+  template <class BaseClass>
   class WithStreamedUnaryMethod_CheckNodeHealth : public BaseClass {
    private:
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithStreamedUnaryMethod_CheckNodeHealth() {
-      ::grpc::Service::MarkMethodStreamed(1,
+      ::grpc::Service::MarkMethodStreamed(2,
         new ::grpc::internal::StreamedUnaryHandler<
           ::storage::NodeHealthRequest, ::storage::NodeHealthResponse>(
             [this](::grpc::ServerContext* context,
@@ -895,7 +1308,7 @@ class MasterService final {
     void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
    public:
     WithStreamedUnaryMethod_GetNodes() {
-      ::grpc::Service::MarkMethodStreamed(2,
+      ::grpc::Service::MarkMethodStreamed(3,
         new ::grpc::internal::StreamedUnaryHandler<
           ::storage::GetNodesRequest, ::storage::GetNodesResponse>(
             [this](::grpc::ServerContext* context,
@@ -916,9 +1329,63 @@ class MasterService final {
     // replace default version of method with streamed unary
     virtual ::grpc::Status StreamedGetNodes(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::storage::GetNodesRequest,::storage::GetNodesResponse>* server_unary_streamer) = 0;
   };
-  typedef WithStreamedUnaryMethod_RegisterNode<WithStreamedUnaryMethod_CheckNodeHealth<WithStreamedUnaryMethod_GetNodes<Service > > > StreamedUnaryService;
+  template <class BaseClass>
+  class WithStreamedUnaryMethod_RecordChunk : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithStreamedUnaryMethod_RecordChunk() {
+      ::grpc::Service::MarkMethodStreamed(4,
+        new ::grpc::internal::StreamedUnaryHandler<
+          ::storage::RecordChunkRequest, ::storage::RecordChunkResponse>(
+            [this](::grpc::ServerContext* context,
+                   ::grpc::ServerUnaryStreamer<
+                     ::storage::RecordChunkRequest, ::storage::RecordChunkResponse>* streamer) {
+                       return this->StreamedRecordChunk(context,
+                         streamer);
+                  }));
+    }
+    ~WithStreamedUnaryMethod_RecordChunk() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable regular version of this method
+    ::grpc::Status RecordChunk(::grpc::ServerContext* /*context*/, const ::storage::RecordChunkRequest* /*request*/, ::storage::RecordChunkResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    // replace default version of method with streamed unary
+    virtual ::grpc::Status StreamedRecordChunk(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::storage::RecordChunkRequest,::storage::RecordChunkResponse>* server_unary_streamer) = 0;
+  };
+  template <class BaseClass>
+  class WithStreamedUnaryMethod_GetFile : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithStreamedUnaryMethod_GetFile() {
+      ::grpc::Service::MarkMethodStreamed(5,
+        new ::grpc::internal::StreamedUnaryHandler<
+          ::storage::GetFileRequest, ::storage::GetFileResponse>(
+            [this](::grpc::ServerContext* context,
+                   ::grpc::ServerUnaryStreamer<
+                     ::storage::GetFileRequest, ::storage::GetFileResponse>* streamer) {
+                       return this->StreamedGetFile(context,
+                         streamer);
+                  }));
+    }
+    ~WithStreamedUnaryMethod_GetFile() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable regular version of this method
+    ::grpc::Status GetFile(::grpc::ServerContext* /*context*/, const ::storage::GetFileRequest* /*request*/, ::storage::GetFileResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    // replace default version of method with streamed unary
+    virtual ::grpc::Status StreamedGetFile(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::storage::GetFileRequest,::storage::GetFileResponse>* server_unary_streamer) = 0;
+  };
+  typedef WithStreamedUnaryMethod_RegisterNode<WithStreamedUnaryMethod_Heartbeat<WithStreamedUnaryMethod_CheckNodeHealth<WithStreamedUnaryMethod_GetNodes<WithStreamedUnaryMethod_RecordChunk<WithStreamedUnaryMethod_GetFile<Service > > > > > > StreamedUnaryService;
   typedef Service SplitStreamedService;
-  typedef WithStreamedUnaryMethod_RegisterNode<WithStreamedUnaryMethod_CheckNodeHealth<WithStreamedUnaryMethod_GetNodes<Service > > > StreamedService;
+  typedef WithStreamedUnaryMethod_RegisterNode<WithStreamedUnaryMethod_Heartbeat<WithStreamedUnaryMethod_CheckNodeHealth<WithStreamedUnaryMethod_GetNodes<WithStreamedUnaryMethod_RecordChunk<WithStreamedUnaryMethod_GetFile<Service > > > > > > StreamedService;
 };
 
 }  // namespace storage

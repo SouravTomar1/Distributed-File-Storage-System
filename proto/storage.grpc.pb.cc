@@ -127,8 +127,11 @@ StorageService::Service::~Service() {
 
 static const char* MasterService_method_names[] = {
   "/storage.MasterService/RegisterNode",
+  "/storage.MasterService/Heartbeat",
   "/storage.MasterService/CheckNodeHealth",
   "/storage.MasterService/GetNodes",
+  "/storage.MasterService/RecordChunk",
+  "/storage.MasterService/GetFile",
 };
 
 std::unique_ptr< MasterService::Stub> MasterService::NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options) {
@@ -139,8 +142,11 @@ std::unique_ptr< MasterService::Stub> MasterService::NewStub(const std::shared_p
 
 MasterService::Stub::Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options)
   : channel_(channel), rpcmethod_RegisterNode_(MasterService_method_names[0], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_CheckNodeHealth_(MasterService_method_names[1], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
-  , rpcmethod_GetNodes_(MasterService_method_names[2], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_Heartbeat_(MasterService_method_names[1], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_CheckNodeHealth_(MasterService_method_names[2], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_GetNodes_(MasterService_method_names[3], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_RecordChunk_(MasterService_method_names[4], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  , rpcmethod_GetFile_(MasterService_method_names[5], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
   {}
 
 ::grpc::Status MasterService::Stub::RegisterNode(::grpc::ClientContext* context, const ::storage::RegisterNodeRequest& request, ::storage::RegisterNodeResponse* response) {
@@ -162,6 +168,29 @@ void MasterService::Stub::async::RegisterNode(::grpc::ClientContext* context, co
 ::grpc::ClientAsyncResponseReader< ::storage::RegisterNodeResponse>* MasterService::Stub::AsyncRegisterNodeRaw(::grpc::ClientContext* context, const ::storage::RegisterNodeRequest& request, ::grpc::CompletionQueue* cq) {
   auto* result =
     this->PrepareAsyncRegisterNodeRaw(context, request, cq);
+  result->StartCall();
+  return result;
+}
+
+::grpc::Status MasterService::Stub::Heartbeat(::grpc::ClientContext* context, const ::storage::HeartbeatRequest& request, ::storage::HeartbeatResponse* response) {
+  return ::grpc::internal::BlockingUnaryCall< ::storage::HeartbeatRequest, ::storage::HeartbeatResponse, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), rpcmethod_Heartbeat_, context, request, response);
+}
+
+void MasterService::Stub::async::Heartbeat(::grpc::ClientContext* context, const ::storage::HeartbeatRequest* request, ::storage::HeartbeatResponse* response, std::function<void(::grpc::Status)> f) {
+  ::grpc::internal::CallbackUnaryCall< ::storage::HeartbeatRequest, ::storage::HeartbeatResponse, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_Heartbeat_, context, request, response, std::move(f));
+}
+
+void MasterService::Stub::async::Heartbeat(::grpc::ClientContext* context, const ::storage::HeartbeatRequest* request, ::storage::HeartbeatResponse* response, ::grpc::ClientUnaryReactor* reactor) {
+  ::grpc::internal::ClientCallbackUnaryFactory::Create< ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_Heartbeat_, context, request, response, reactor);
+}
+
+::grpc::ClientAsyncResponseReader< ::storage::HeartbeatResponse>* MasterService::Stub::PrepareAsyncHeartbeatRaw(::grpc::ClientContext* context, const ::storage::HeartbeatRequest& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncResponseReaderHelper::Create< ::storage::HeartbeatResponse, ::storage::HeartbeatRequest, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), cq, rpcmethod_Heartbeat_, context, request);
+}
+
+::grpc::ClientAsyncResponseReader< ::storage::HeartbeatResponse>* MasterService::Stub::AsyncHeartbeatRaw(::grpc::ClientContext* context, const ::storage::HeartbeatRequest& request, ::grpc::CompletionQueue* cq) {
+  auto* result =
+    this->PrepareAsyncHeartbeatRaw(context, request, cq);
   result->StartCall();
   return result;
 }
@@ -212,6 +241,52 @@ void MasterService::Stub::async::GetNodes(::grpc::ClientContext* context, const 
   return result;
 }
 
+::grpc::Status MasterService::Stub::RecordChunk(::grpc::ClientContext* context, const ::storage::RecordChunkRequest& request, ::storage::RecordChunkResponse* response) {
+  return ::grpc::internal::BlockingUnaryCall< ::storage::RecordChunkRequest, ::storage::RecordChunkResponse, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), rpcmethod_RecordChunk_, context, request, response);
+}
+
+void MasterService::Stub::async::RecordChunk(::grpc::ClientContext* context, const ::storage::RecordChunkRequest* request, ::storage::RecordChunkResponse* response, std::function<void(::grpc::Status)> f) {
+  ::grpc::internal::CallbackUnaryCall< ::storage::RecordChunkRequest, ::storage::RecordChunkResponse, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_RecordChunk_, context, request, response, std::move(f));
+}
+
+void MasterService::Stub::async::RecordChunk(::grpc::ClientContext* context, const ::storage::RecordChunkRequest* request, ::storage::RecordChunkResponse* response, ::grpc::ClientUnaryReactor* reactor) {
+  ::grpc::internal::ClientCallbackUnaryFactory::Create< ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_RecordChunk_, context, request, response, reactor);
+}
+
+::grpc::ClientAsyncResponseReader< ::storage::RecordChunkResponse>* MasterService::Stub::PrepareAsyncRecordChunkRaw(::grpc::ClientContext* context, const ::storage::RecordChunkRequest& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncResponseReaderHelper::Create< ::storage::RecordChunkResponse, ::storage::RecordChunkRequest, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), cq, rpcmethod_RecordChunk_, context, request);
+}
+
+::grpc::ClientAsyncResponseReader< ::storage::RecordChunkResponse>* MasterService::Stub::AsyncRecordChunkRaw(::grpc::ClientContext* context, const ::storage::RecordChunkRequest& request, ::grpc::CompletionQueue* cq) {
+  auto* result =
+    this->PrepareAsyncRecordChunkRaw(context, request, cq);
+  result->StartCall();
+  return result;
+}
+
+::grpc::Status MasterService::Stub::GetFile(::grpc::ClientContext* context, const ::storage::GetFileRequest& request, ::storage::GetFileResponse* response) {
+  return ::grpc::internal::BlockingUnaryCall< ::storage::GetFileRequest, ::storage::GetFileResponse, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), rpcmethod_GetFile_, context, request, response);
+}
+
+void MasterService::Stub::async::GetFile(::grpc::ClientContext* context, const ::storage::GetFileRequest* request, ::storage::GetFileResponse* response, std::function<void(::grpc::Status)> f) {
+  ::grpc::internal::CallbackUnaryCall< ::storage::GetFileRequest, ::storage::GetFileResponse, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_GetFile_, context, request, response, std::move(f));
+}
+
+void MasterService::Stub::async::GetFile(::grpc::ClientContext* context, const ::storage::GetFileRequest* request, ::storage::GetFileResponse* response, ::grpc::ClientUnaryReactor* reactor) {
+  ::grpc::internal::ClientCallbackUnaryFactory::Create< ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_GetFile_, context, request, response, reactor);
+}
+
+::grpc::ClientAsyncResponseReader< ::storage::GetFileResponse>* MasterService::Stub::PrepareAsyncGetFileRaw(::grpc::ClientContext* context, const ::storage::GetFileRequest& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncResponseReaderHelper::Create< ::storage::GetFileResponse, ::storage::GetFileRequest, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), cq, rpcmethod_GetFile_, context, request);
+}
+
+::grpc::ClientAsyncResponseReader< ::storage::GetFileResponse>* MasterService::Stub::AsyncGetFileRaw(::grpc::ClientContext* context, const ::storage::GetFileRequest& request, ::grpc::CompletionQueue* cq) {
+  auto* result =
+    this->PrepareAsyncGetFileRaw(context, request, cq);
+  result->StartCall();
+  return result;
+}
+
 MasterService::Service::Service() {
   AddMethod(new ::grpc::internal::RpcServiceMethod(
       MasterService_method_names[0],
@@ -226,6 +301,16 @@ MasterService::Service::Service() {
   AddMethod(new ::grpc::internal::RpcServiceMethod(
       MasterService_method_names[1],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
+      new ::grpc::internal::RpcMethodHandler< MasterService::Service, ::storage::HeartbeatRequest, ::storage::HeartbeatResponse, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
+          [](MasterService::Service* service,
+             ::grpc::ServerContext* ctx,
+             const ::storage::HeartbeatRequest* req,
+             ::storage::HeartbeatResponse* resp) {
+               return service->Heartbeat(ctx, req, resp);
+             }, this)));
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      MasterService_method_names[2],
+      ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< MasterService::Service, ::storage::NodeHealthRequest, ::storage::NodeHealthResponse, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
           [](MasterService::Service* service,
              ::grpc::ServerContext* ctx,
@@ -234,7 +319,7 @@ MasterService::Service::Service() {
                return service->CheckNodeHealth(ctx, req, resp);
              }, this)));
   AddMethod(new ::grpc::internal::RpcServiceMethod(
-      MasterService_method_names[2],
+      MasterService_method_names[3],
       ::grpc::internal::RpcMethod::NORMAL_RPC,
       new ::grpc::internal::RpcMethodHandler< MasterService::Service, ::storage::GetNodesRequest, ::storage::GetNodesResponse, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
           [](MasterService::Service* service,
@@ -243,12 +328,39 @@ MasterService::Service::Service() {
              ::storage::GetNodesResponse* resp) {
                return service->GetNodes(ctx, req, resp);
              }, this)));
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      MasterService_method_names[4],
+      ::grpc::internal::RpcMethod::NORMAL_RPC,
+      new ::grpc::internal::RpcMethodHandler< MasterService::Service, ::storage::RecordChunkRequest, ::storage::RecordChunkResponse, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
+          [](MasterService::Service* service,
+             ::grpc::ServerContext* ctx,
+             const ::storage::RecordChunkRequest* req,
+             ::storage::RecordChunkResponse* resp) {
+               return service->RecordChunk(ctx, req, resp);
+             }, this)));
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      MasterService_method_names[5],
+      ::grpc::internal::RpcMethod::NORMAL_RPC,
+      new ::grpc::internal::RpcMethodHandler< MasterService::Service, ::storage::GetFileRequest, ::storage::GetFileResponse, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
+          [](MasterService::Service* service,
+             ::grpc::ServerContext* ctx,
+             const ::storage::GetFileRequest* req,
+             ::storage::GetFileResponse* resp) {
+               return service->GetFile(ctx, req, resp);
+             }, this)));
 }
 
 MasterService::Service::~Service() {
 }
 
 ::grpc::Status MasterService::Service::RegisterNode(::grpc::ServerContext* context, const ::storage::RegisterNodeRequest* request, ::storage::RegisterNodeResponse* response) {
+  (void) context;
+  (void) request;
+  (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status MasterService::Service::Heartbeat(::grpc::ServerContext* context, const ::storage::HeartbeatRequest* request, ::storage::HeartbeatResponse* response) {
   (void) context;
   (void) request;
   (void) response;
@@ -263,6 +375,20 @@ MasterService::Service::~Service() {
 }
 
 ::grpc::Status MasterService::Service::GetNodes(::grpc::ServerContext* context, const ::storage::GetNodesRequest* request, ::storage::GetNodesResponse* response) {
+  (void) context;
+  (void) request;
+  (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status MasterService::Service::RecordChunk(::grpc::ServerContext* context, const ::storage::RecordChunkRequest* request, ::storage::RecordChunkResponse* response) {
+  (void) context;
+  (void) request;
+  (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+::grpc::Status MasterService::Service::GetFile(::grpc::ServerContext* context, const ::storage::GetFileRequest* request, ::storage::GetFileResponse* response) {
   (void) context;
   (void) request;
   (void) response;

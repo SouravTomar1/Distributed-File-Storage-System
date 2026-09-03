@@ -1,0 +1,28 @@
+[1/12] Building CXX object CMakeFiles/StorageNode.dir/storage/StorageNode.cpp.obj
+FAILED: [code=1] CMakeFiles/StorageNode.dir/storage/StorageNode.cpp.obj 
+C:\msys64\ucrt64\bin\c++.exe -DPROTOBUF_USE_DLLS -IC:/Users/iisga/OneDrive/Desktop/DFSS/proto -std=gnu++17 -MD -MT CMakeFiles/StorageNode.dir/storage/StorageNode.cpp.obj -MF CMakeFiles\StorageNode.dir\storage\StorageNode.cpp.obj.d -o CMakeFiles/StorageNode.dir/storage/StorageNode.cpp.obj -c C:/Users/iisga/OneDrive/Desktop/DFSS/storage/StorageNode.cpp
+[2/12] Building CXX object CMakeFiles/StorageNode.dir/proto/storage.pb.cc.obj
+FAILED: [code=1] CMakeFiles/StorageNode.dir/proto/storage.pb.cc.obj 
+C:\msys64\ucrt64\bin\c++.exe -DPROTOBUF_USE_DLLS -IC:/Users/iisga/OneDrive/Desktop/DFSS/proto -std=gnu++17 -MD -MT CMakeFiles/StorageNode.dir/proto/storage.pb.cc.obj -MF CMakeFiles\StorageNode.dir\proto\storage.pb.cc.obj.d -o CMakeFiles/StorageNode.dir/proto/storage.pb.cc.obj -c C:/Users/iisga/OneDrive/Desktop/DFSS/proto/storage.pb.cc
+[3/12] Building CXX object CMakeFiles/StorageNode.dir/proto/storage.grpc.pb.cc.obj
+FAILED: [code=1] CMakeFiles/StorageNode.dir/proto/storage.grpc.pb.cc.obj 
+C:\msys64\ucrt64\bin\c++.exe -DPROTOBUF_USE_DLLS -IC:/Users/iisga/OneDrive/Desktop/DFSS/proto -std=gnu++17 -MD -MT CMakeFiles/StorageNode.dir/proto/storage.grpc.pb.cc.obj -MF CMakeFiles\StorageNode.dir\proto\storage.grpc.pb.cc.obj.d -o CMakeFiles/StorageNode.dir/proto/storage.grpc.pb.cc.obj -c C:/Users/iisga/OneDrive/Desktop/DFSS/proto/storage.grpc.pb.cc
+[4/12] Building CXX object CMakeFiles/Client.dir/client/Client.cpp.obj
+FAILED: [code=1] CMakeFiles/Client.dir/client/Client.cpp.obj 
+C:\msys64\ucrt64\bin\c++.exe -DPROTOBUF_USE_DLLS -IC:/Users/iisga/OneDrive/Desktop/DFSS/proto -std=gnu++17 -MD -MT CMakeFiles/Client.dir/client/Client.cpp.obj -MF CMakeFiles\Client.dir\client\Client.cpp.obj.d -o CMakeFiles/Client.dir/client/Client.cpp.obj -c C:/Users/iisga/OneDrive/Desktop/DFSS/client/Client.cpp
+[5/12] Building CXX object CMakeFiles/Client.dir/proto/storage.pb.cc.obj
+FAILED: [code=1] CMakeFiles/Client.dir/proto/storage.pb.cc.obj 
+C:\msys64\ucrt64\bin\c++.exe -DPROTOBUF_USE_DLLS -IC:/Users/iisga/OneDrive/Desktop/DFSS/proto -std=gnu++17 -MD -MT CMakeFiles/Client.dir/proto/storage.pb.cc.obj -MF CMakeFiles\Client.dir\proto\storage.pb.cc.obj.d -o CMakeFiles/Client.dir/proto/storage.pb.cc.obj -c C:/Users/iisga/OneDrive/Desktop/DFSS/proto/storage.pb.cc
+[6/12] Building CXX object CMakeFiles/Client.dir/proto/storage.grpc.pb.cc.obj
+FAILED: [code=1] CMakeFiles/Client.dir/proto/storage.grpc.pb.cc.obj 
+C:\msys64\ucrt64\bin\c++.exe -DPROTOBUF_USE_DLLS -IC:/Users/iisga/OneDrive/Desktop/DFSS/proto -std=gnu++17 -MD -MT CMakeFiles/Client.dir/proto/storage.grpc.pb.cc.obj -MF CMakeFiles\Client.dir\proto\storage.grpc.pb.cc.obj.d -o CMakeFiles/Client.dir/proto/storage.grpc.pb.cc.obj -c C:/Users/iisga/OneDrive/Desktop/DFSS/proto/storage.grpc.pb.cc
+[7/12] Building CXX object CMakeFiles/Master.dir/master/Master.cpp.obj
+FAILED: [code=1] CMakeFiles/Master.dir/master/Master.cpp.obj 
+C:\msys64\ucrt64\bin\c++.exe -DPROTOBUF_USE_DLLS -IC:/Users/iisga/OneDrive/Desktop/DFSS/proto -std=gnu++17 -MD -MT CMakeFiles/Master.dir/master/Master.cpp.obj -MF CMakeFiles\Master.dir\master\Master.cpp.obj.d -o CMakeFiles/Master.dir/master/Master.cpp.obj -c C:/Users/iisga/OneDrive/Desktop/DFSS/master/Master.cpp
+[8/12] Building CXX object CMakeFiles/Master.dir/proto/storage.pb.cc.obj
+FAILED: [code=1] CMakeFiles/Master.dir/proto/storage.pb.cc.obj 
+C:\msys64\ucrt64\bin\c++.exe -DPROTOBUF_USE_DLLS -IC:/Users/iisga/OneDrive/Desktop/DFSS/proto -std=gnu++17 -MD -MT CMakeFiles/Master.dir/proto/storage.pb.cc.obj -MF CMakeFiles\Master.dir\proto\storage.pb.cc.obj.d -o CMakeFiles/Master.dir/proto/storage.pb.cc.obj -c C:/Users/iisga/OneDrive/Desktop/DFSS/proto/storage.pb.cc
+[9/12] Building CXX object CMakeFiles/Master.dir/proto/storage.grpc.pb.cc.obj
+FAILED: [code=1] CMakeFiles/Master.dir/proto/storage.grpc.pb.cc.obj 
+C:\msys64\ucrt64\bin\c++.exe -DPROTOBUF_USE_DLLS -IC:/Users/iisga/OneDrive/Desktop/DFSS/proto -std=gnu++17 -MD -MT CMakeFiles/Master.dir/proto/storage.grpc.pb.cc.obj -MF CMakeFiles\Master.dir\proto\storage.grpc.pb.cc.obj.d -o CMakeFiles/Master.dir/proto/storage.grpc.pb.cc.obj -c C:/Users/iisga/OneDrive/Desktop/DFSS/proto/storage.grpc.pb.cc
+ninja: build stopped: subcommand failed.
